@@ -1,8 +1,6 @@
+// src/main/java/com/jpmc/midascore/foundation/Transaction.java
 package com.jpmc.midascore.foundation;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
     private long senderId;
     private long recipientId;
@@ -39,10 +37,5 @@ public class Transaction {
 
     public void setAmount(float amount) {
         this.amount = amount;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction {senderId=" + senderId + ", recipientId=" + recipientId + ", amount=" + amount + "}";
     }
 }
