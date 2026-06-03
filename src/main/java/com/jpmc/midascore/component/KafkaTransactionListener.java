@@ -1,8 +1,5 @@
-// src/main/java/com/jpmc/midascore/component/KafkaTransactionListener.java
 package com.jpmc.midascore.component;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.jpmc.midascore.foundation.Transaction;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -16,9 +13,12 @@ public class KafkaTransactionListener {
     this.databaseConduit = databaseConduit;
   }
 
-  @KafkaListener(topics = "${general.topic-name}")
+  @KafkaListener(topics = "${general.kafka-topic}")
   public void listen(Transaction transaction) {
+
+    System.out.println("LISTENER HIT");
+    System.out.println(transaction);
+
     databaseConduit.saveTransaction(transaction);
-    databaseConduit.logWaldorfBalance();
   }
 }

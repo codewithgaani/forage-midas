@@ -9,6 +9,8 @@ import com.jpmc.midascore.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.jpmc.midascore.foundation.Incentive;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class DatabaseConduit {
@@ -16,11 +18,16 @@ public class DatabaseConduit {
 
     private final UserRepository userRepository;
     private final TransactionRecordRepository transactionRecordRepository;
+    private final RestTemplate restTemplate;
 
-    public DatabaseConduit(UserRepository userRepository,
-            TransactionRecordRepository transactionRecordRepository) {
+    public DatabaseConduit(
+            UserRepository userRepository,
+            TransactionRecordRepository transactionRecordRepository,
+            RestTemplate restTemplate) {
+
         this.userRepository = userRepository;
         this.transactionRecordRepository = transactionRecordRepository;
+        this.restTemplate = restTemplate;
     }
 
     public void saveUser(UserRecord userRecord) {
@@ -28,17 +35,18 @@ public class DatabaseConduit {
     }
 
     public UserRecord findUser(long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id);
     }
 
     public void saveTransaction(Transaction transaction) {
+        System.out.println("TRANSACTION RECEIVED: " + transaction);
         // Validate senderId
-        UserRecord sender = userRepository.findById(transaction.getSenderId()).orElse(null);
+        UserRecord sender = userRepository.findById(transaction.getSenderId());
         if (sender == null)
             return;
 
         // Validate recipientId
-        UserRecord recipient = userRepository.findById(transaction.getRecipientId()).orElse(null);
+        UserRecord recipient = userRepository.findById(transaction.getRecipientId());
         if (recipient == null)
             return;
 
@@ -46,23 +54,48 @@ public class DatabaseConduit {
         if (sender.getBalance() < transaction.getAmount())
             return;
 
-        // Adjust balances
-        sender.setBalance(sender.getBalance() - transaction.getAmount());
-        recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+        Incentive incentive = restTemplate.postForObject(
+                "http://localhost:8080/incentive",
+                transaction,
+                Incentive.class);
 
-        // Persist balance changes
+        float incentiveAmount = 0;
+
+        if (incentive != null) {
+            incentiveAmount = incentive.getAmount();
+        }
+
+        sender.setBalance(
+                sender.getBalance() - transaction.getAmount());
+
+        recipient.setBalance(
+                recipient.getBalance()
+                        + transaction.getAmount()
+                        + incentiveAmount);
+
         userRepository.save(sender);
         userRepository.save(recipient);
 
-        // Record the transaction
-        TransactionRecord record = new TransactionRecord(sender, recipient, transaction.getAmount());
+        TransactionRecord record = new TransactionRecord(
+                sender,
+                recipient,
+                transaction.getAmount(),
+                incentiveAmount);
+
         transactionRecordRepository.save(record);
+        UserRecord wilbur = userRepository.findById(9L);
+
+        if (wilbur != null) {
+            System.out.println("=================================");
+            System.out.println("WILBUR BALANCE = " + wilbur.getBalance());
+            System.out.println("=================================");
+        }
     }
 
-    public void logWaldorfBalance() {
+    public void logWilburBalance() {
         userRepository.findAll().forEach(user -> {
-            if (user.getName() != null && user.getName().toLowerCase().contains("waldorf")) {
-                log.info(">>> WALDORF BALANCE: {}", user.getBalance());
+            if ("wilbur".equalsIgnoreCase(user.getName())) {
+                log.info(">>> WILBUR BALANCE: {}", user.getBalance());
             }
         });
     }

@@ -1,4 +1,3 @@
-// src/main/java/com/jpmc/midascore/entity/UserRecord.java
 package com.jpmc.midascore.entity;
 
 import jakarta.persistence.*;
@@ -44,10 +43,5 @@ public class UserRecord {
 
     public void setBalance(float balance) {
         this.balance = balance;
-    }
-
-    public UserRecord orElse(Object object) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'orElse'");
     }
 }

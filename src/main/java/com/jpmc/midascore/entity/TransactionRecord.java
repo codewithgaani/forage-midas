@@ -1,4 +1,3 @@
-// src/main/java/com/jpmc/midascore/entity/TransactionRecord.java
 package com.jpmc.midascore.entity;
 
 import jakarta.persistence.*;
@@ -21,16 +20,22 @@ public class TransactionRecord {
 
   private float amount;
 
+  private float incentive;
+
   public TransactionRecord() {
   }
 
-  public TransactionRecord(UserRecord sender, UserRecord recipient, float amount) {
+  public TransactionRecord(
+      UserRecord sender,
+      UserRecord recipient,
+      float amount,
+      float incentive) {
     this.sender = sender;
     this.recipient = recipient;
     this.amount = amount;
+    this.incentive = incentive;
   }
 
-  // Getters and setters
   public long getId() {
     return id;
   }
@@ -57,5 +62,13 @@ public class TransactionRecord {
 
   public void setAmount(float amount) {
     this.amount = amount;
+  }
+
+  public float getIncentive() {
+    return incentive;
+  }
+
+  public void setIncentive(float incentive) {
+    this.incentive = incentive;
   }
 }
